@@ -1,0 +1,35 @@
+#violin-image {
+    /* Scale up 3 times the original size */
+    transform: scale(3) rotate(90deg);
+    /* Adjust as necessary to center or position the image correctly */
+	transform-origin: center;
+    /* Since scaling affects the layout, you might need to adjust the container size */
+}
+
+#violin-container {
+    position: relative;
+    width: 640px; /* Adjust based on your violin image size */
+    height: 480px; /* Adjust based on your violin image size */
+	left: 300px;
+}
+
+.overlay {
+    position: absolute;
+    transition: all 1s ease; /* Smooth transition for moving elements */
+}
+
+#finger-image {
+    width: 50px; /* Adjust based on your finger image size */
+    height: auto;
+    /* Initial position, adjust as necessary */
+    left: 300px;
+    top: 120px;
+}
+
+#bow-image {
+    width: 20px; /* Adjust based on your bow image size */
+    height: auto;
+    /* Initial position, adjust as necessary */
+    left: 0px;
+    bottom: 0px;
+}
