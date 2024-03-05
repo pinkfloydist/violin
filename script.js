@@ -10,46 +10,70 @@ const bowPositions = [180.        , 186.31578947, 192.63157895, 198.94736842,
        255.78947368, 262.10526316, 268.42105263, 274.73684211,
        281.05263158, 287.36842105, 293.68421053, 300.        , 180, 180, 180, 180];
 
+let isPlaying = false;
+let source = null;
+let audioBuffer = null;
+let animationFrameId = null;
 let currentIndex = 0;
-const createAudioContext = () => {
-    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-};
-// Button click event listener
-document.addEventListener('click', () => {
-    if (!audioContext) {
-        createAudioContext();
-        // Continue with the rest of your code (e.g., creating audio buffer)
-    }
-});
-// Create an audio buffer with a placeholder sound (you'll need to replace this with your actual sound data)
-const createAudioBuffer = async () => {
-    const response = await fetch('violin.wav'); // Replace 'your_sound_file.mp3' with your actual sound file
+
+// Load the audio buffer asynchronously
+const loadAudioBuffer = async () => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const response = await fetch('violin.wav'); // Ensure this path is correct
     const arrayBuffer = await response.arrayBuffer();
-    return await audioContext.decodeAudioData(arrayBuffer);
+    audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 };
-let audioBuffer;
-function updateAnimation() {
+
+const playSound = () => {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioBuffer) {
+        source = audioContext.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(audioContext.destination);
+        source.loop = true;
+        source.start(0);
+    }
+};
+
+const stopSound = () => {
+    if (source) {
+        source.stop();
+        source = null;
+    }
+};
+
+const updateAnimation = () => {
     const fingerImage = document.getElementById('finger-image');
     const bowImage = document.getElementById('bow-image');
 
     // Assuming these positions map to pixel values for simplicity
-    fingerImage.style.left = `${fingerPositions[currentIndex]}px`;
-    bowImage.style.bottom = `${bowPositions[currentIndex]}px`;
-	// Play sound
-    const source = audioContext.createBufferSource();
-    source.buffer = audioBuffer;
+    if(fingerPositions && bowPositions) { // Make sure your arrays are defined
+        fingerImage.style.left = `${fingerPositions[currentIndex]}px`;
+        bowImage.style.bottom = `${bowPositions[currentIndex]}px`;
 
-    source.connect(audioContext.destination);
-    source.start(0);
-
-    currentIndex++;
-    if (currentIndex >= fingerPositions.length) {
-        currentIndex = 0; // Reset to loop the animation
+        currentIndex++;
+        if (currentIndex >= fingerPositions.length) {
+            currentIndex = 0; // Reset to loop the animation
+        }
     }
-}
 
-createAudioBuffer().then(buffer => {
-    audioBuffer = buffer;
-    setInterval(updateAnimation, 250); // Update every second (adjust as needed)
+    if (isPlaying) {
+        animationFrameId = requestAnimationFrame(updateAnimation);
+    }
+};
+
+document.getElementById('playPauseBtn').addEventListener('click', () => {
+    isPlaying = !isPlaying;
+    if (isPlaying) {
+        playSound();
+        updateAnimation();
+        document.getElementById('playPauseBtn').textContent = 'Pause';
+    } else {
+        stopSound();
+        cancelAnimationFrame(animationFrameId);
+        document.getElementById('playPauseBtn').textContent = 'Play';
+    }
 });
-// Update every second (1000 milliseconds), adjust as needed
+
+// Preload the audio buffer
+loadAudioBuffer();
